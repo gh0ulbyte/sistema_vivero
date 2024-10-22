@@ -1,6 +1,7 @@
 import tkinter
 from datetime import datetime
 import calendar
+import time
 from tkinter import Toplevel, Label, Menu
 from tkinter import messagebox, Frame, Entry, Button, StringVar
 from PIL import Image, ImageTk
@@ -8,9 +9,10 @@ from tkinter import ttk, END
 from modelo import nueva_planta, nueva_planta_riego
 from modelo import buscar_planta
 from modelo import listar_planta, buscar_planta_simple
-from modelo import riego_auto, habilitar_auto, deshabilitar_auto
+from modelo import riego_auto
 from modelo import vender_planta, guardar_fecha
-from riego import Riego,Llave
+from riego import Riego,Llave, CuentaRegresiva
+import threading
 
 
 
@@ -29,6 +31,11 @@ class Ventana_G(Frame):
         self.cantidad_venta=StringVar()
         self.cajon=StringVar()
         self.fecha_riego=StringVar()
+        self.sistema_habilitado=True
+        
+        hilo_riego = threading.Thread(target=riego_auto)
+        hilo_riego.daemon = True
+        hilo_riego.start()    
         
     def bienvenida(self):
         if self.configuro_ventana:
@@ -122,12 +129,13 @@ class Ventana_G(Frame):
     def nueva_planta1(self):
         self.ven_plantita=Toplevel(self.ppal)
         self.ven_plantita.geometry('400x400')
+        self.ven_plantita.title('Nueva Planta')
         label1=Label(self.ven_plantita, text='Especie: ').place(x=2,y=50)
-        label2=Label(self.ven_plantita, text='cajon:').place(x=2, y=100)
-        label3=Label(self.ven_plantita, text='cantidad plantines:').place(x=2, y=150)
-        text_especie=Entry(self.ven_plantita,textvariable=self.especie, font=16).place(x=100, y=50)
-        text_cajon=Entry(self.ven_plantita, textvariable=self.cajon, font=16).place(x=100,y=100)
-        text_cantidad=Entry(self.ven_plantita, textvariable=self.cantidad,font=16).place(x=100, y=150)
+        label2=Label(self.ven_plantita, text='Cajon N°:').place(x=2, y=100)
+        label3=Label(self.ven_plantita, text='Cantidad plantines:').place(x=2, y=150)
+        text_especie=Entry(self.ven_plantita,textvariable=self.especie, font=16).place(x=110, y=50)
+        text_cajon=Entry(self.ven_plantita, textvariable=self.cajon, font=16).place(x=110,y=100)
+        text_cantidad=Entry(self.ven_plantita, textvariable=self.cantidad,font=16).place(x=110, y=150)
         btn_grabar=Button(self.ven_plantita, text="Grabar", command=self.grabar_planta).place(x=10, y=200)
         btn_cerrar=Button(self.ven_plantita, text="Cerrar", command=self.ven_plantita.destroy).place(x=60, y=200)
         
@@ -150,6 +158,7 @@ class Ventana_G(Frame):
     def buscar_planta2(self):
         self.ven_busco=Toplevel(self.ppal)
         self.ven_busco.geometry('400x300')
+        self.ven_busco.title('Buscar ID planta')
         label1=Label(self.ven_busco, text="Especie").place(x=2, y=10)
         text_especie=Entry(self.ven_busco, textvariable=self.especie, font=16).place(x=50,y=10)
         btn_busco=Button(self.ven_busco, text='Buscar ', command=self.buscar_planta_2).place(x=2, y=50)
@@ -182,6 +191,7 @@ class Ventana_G(Frame):
     def venta(self):
         self.ven_buster=Toplevel(self.ppal)
         self.ven_buster.geometry('400x400')
+        self.ven_buster.title('Vender Planta')
         label1=Label(self.ven_buster, text='ID Planta').place(x=2 , y=10)
         text_id=Entry(self.ven_buster, textvariable=self.id_planta, font=16).place(x=60,y=10)
         btn_buscar=Button(self.ven_buster, text='Buscar', command=self.venta_cosecha).place(x=2,y=50)
@@ -247,152 +257,54 @@ class Ventana_G(Frame):
     
     
     #Riego
-        
-        
-    def nueva_riego_planta(self):
-        self.ven_plantita_riego=Toplevel(self.ppal)
-        self.ven_plantita_riego.geometry('400x400')
-        label1=Label(self.ven_plantita_riego, text='ID Planta: ').place(x=2,y=50)
-        label2=Label(self.ven_plantita_riego, text='Fecha de Riego:').place(x=2, y=100)
-        text_planta=Entry(self.ven_plantita_riego,textvariable=self.id_planta, font=16).place(x=100, y=50)
-        text_fecha=Entry(self.ven_plantita_riego, textvariable=self.fecha_riego, font=16).place(x=100,y=100)
-        btn_grabar=Button(self.ven_plantita_riego, text="Grabar", command=self.grabar_planta_riego).place(x=10, y=200)
-        btn_cerrar=Button(self.ven_plantita_riego, text="Cerrar", command=self.ven_plantita_riego.destroy).place(x=60, y=200)
-        
-    def grabar_planta_riego(self):
-        try:
-            fecha_ingresada=datetime.strptime(self.fecha_riego.get(), '%d-%m-%Y')
-        
-            if nueva_planta_riego(self.id_planta.get(), fecha_ingresada):
-                if self.fecha_riego.get() in calendar:
-                    messagebox.showinfo("Grabar Riego", "La nueva fecha de riego se ha grabado correctamente")
-                    self.ven_plantita_riego.destroy()
-                    self.riego='si'
-            
-            else:
-                messagebox.showerror("Grabar Riego", "No se pudo guardar la fecha")  
-        except ValueError:
-            messagebox.showerror('Error', 'Ingrese una fecha valida en formato DD-MM-YYYY')    
-            
-    def ultimo_riego_planta(self):
-        
-        self.ven_busco=Toplevel(self.ppal)
-        self.ven_busco.geometry('400x300')
-        label1=Label(self.ven_busco, text="ID Planta").place(x=2, y=10)
-        text_planta=Entry(self.ven_busco, textvariable=self.id_planta, font=16).place(x=60,y=10)
-        #btn_busco=Button(self.ven_busco, text='Buscar ', command=self.buscar_planta_regada).place(x=2, y=50)
-        label2=Label(self.ven_busco, text='Fecha ultimo RIEGO: ').place(x=5, y=80)
-        label3=Label(self.ven_busco, text='ID RIEGO: ').place(x=5, y=120)
-        #txt_fecha=Entry(self.ven_busco, textvariable=self.fecha_ultimo, font=16).place(x=120,y=80)
-        #txt_id_riego=Entry(self.ven_busco, textvariable=self.id_riego, font=16).place(x=110, y=120)
-          
-   # def buscar_planta_regada(self):
-    #    respuesta, plantas = buscar_riego(self.id_planta.get())
-        
-    #    if respuesta:
-    #        if plantas:
-    #            self.fecha_ultimo.set(plantas[0][1])  
-    #            self.id_riego.set(plantas[0][2])
-    #        else:
-    #            self.fecha_ultimo.set(" ")
-    #            self.id_riego.set(" ")
-    #            messagebox.showerror("Buscar RIEGO", "RIEGO no encontrada")
-    #    else:
-    #        self.fecha_ultimo.set(" ")
-    #        self.id_riego.set(" ")
-    #        messagebox.showerror("Buscar RIEGO", "Error en la búsqueda")
-
     def riego_automatico_ventana(self):
-        self.riego_ven=Toplevel(self.ppal) 
-        self.riego_ven.geometry('400x400')
-        label1=Label(self.riego_ven, text='Riego automatico').place(x=2, y=10)
-        btn_buscar=Button(self.riego_ven, text='Buscar', command=self.busco_auto).place(x=150, y=50)
-        txt_habilitado=Entry(self.riego_ven, textvariable=self.habilitado).place(x=2, y= 50)
-        btn_habilitar=Button(self.riego_ven, text='Habilitar Riego', command=self.habilito_riego).place(x=10, y=100)
-        btn_deshabilitar=Button(self.riego_ven, text='Deshabilitar Riego', command=self.deshabilito_riego).place(x=10, y=140)
-        btn_regar=Button(self.riego_ven, text='Regar ahora', command=self.riego_ya_boton)
-        btn_regar.pack(pady=10)
+            self.riego_ven = Toplevel(self.ppal)
+            self.riego_ven.geometry('400x400')
+            self.riego_ven.title('Riego Automático')
+            
+            label1 = Label(self.riego_ven, text='Riego Automático').place(x=2, y=10)
+            self.entrada_estado = Entry(self.riego_ven, width=30)
+            self.entrada_estado.place(x=2, y=50)
+            
+            btn_habilitar = Button(self.riego_ven, text='Habilitar Riego', command=self.habilitar_sistema).place(x=10, y=100)
+            btn_deshabilitar = Button(self.riego_ven, text='Deshabilitar Riego', command=self.deshabilitar_sistema).place(x=10, y=140)
+            btn_verificar = Button(self.riego_ven, text='Verificar Estado', command=self.verificar_estado).place(x=180, y=50)
+            btn_regar_ya=Button(self.riego_ven, text='Regar ahora', command=self.riego_manual).place(x=180, y=80)
+            
+            
+    def verificar_estado(self):
+        estado = "Activado" if self.sistema_habilitado else "Desactivado"
+        self.entrada_estado.delete(0, END)
+        self.entrada_estado.insert(0, estado)
+
+    def habilitar_sistema(self):
+        self.sistema_habilitado = True
+        messagebox.showinfo('Riego Automático', 'Sistema de riego habilitado a las 18:00')
+
+    def deshabilitar_sistema(self):
+        self.sistema_habilitado = False
+        messagebox.showwarning('Advertencia', 'Sistema de riego deshabilitado')
+        
+        
+    def riego_auto(self):
+        hora_programada = "18:00"
+        while True:
+            if self.sistema_habilitado:
+                hora_actual = datetime.now().strftime("%H:%M")
+                if hora_actual == hora_programada:
+                    ventana_cuenta_regresiva=Toplevel(self.ppal)
+                    CuentaRegresiva(ventana_cuenta_regresiva)
+                    Llave(ventana_cuenta_regresiva)
+                    print("Sistema de riego activado")
+                    time.sleep(60)  # Evitar múltiples activaciones en el mismo minuto
+            time.sleep(30)    
+  
     
-    def riego_ya_boton(self):
+  
+    
+    def riego_manual(self):
         ventana_cuenta_regresiva=Toplevel(self.ppal)
         CuentaRegresiva(ventana_cuenta_regresiva)
         Llave(ventana_cuenta_regresiva)
-        
-        
-        
-   
-        
-    def habilito_riego(self):
-        try: 
-            respuesta, auto=habilitar_auto()
-            if respuesta:
-                return True, auto
-            else:
-                return False, " "
-        except Exception as e:
-            print(e)
-        finally:
-            pass
-            
-        
+        self.sistema_habilitado=False
     
-    def deshabilito_riego(self):
-        
-        respuesta, auto=deshabilitar_auto()
-        if respuesta:
-            return True, auto
-        else:
-            return False, " "    
-        
-     
-    def busco_auto(self):
-        respuesta, auto=riego_auto()
-        if respuesta:
-            return True, auto
-        else:
-            return False, " "
-            
-
-    #Riego manual y comprobacion de riego.
-    
-    
-    
-   
-    
-    
-    
-            
-class CuentaRegresiva:
-    def __init__(self, master):
-        self.master = master
-        self.master.title("Regar ahora")
-
-        self.tiempo_restante = 10 
-        self.label_tiempo = Label(master, text="", font=("Helvetica", 24))
-        self.label_tiempo.pack(pady=20)
-
-        self.boton_iniciar = Button(master, text="Iniciar Riego manualmente", command=self.iniciar_cuenta_regresiva)
-        self.boton_iniciar.pack(pady=10)
-
-
-
-    def iniciar_cuenta_regresiva(self):
-        fecha_actual = datetime.now().strftime("%d-%m-%Y")
-        guardar_fecha(fecha_actual)
-    
-        self.boton_iniciar.pack_forget()
-
-        self.actualizar_tiempo()
-        
-
-
-
-
-    def actualizar_tiempo(self):
-        if self.tiempo_restante > 0:
-            self.label_tiempo.config(text=f"Llaves de riego abiertas: {self.tiempo_restante}")
-            self.tiempo_restante -= 1
-            self.master.after(1000, self.actualizar_tiempo) 
-        else:
-            self.label_tiempo.config(text="¡Llaves Cerradas!")
-            messagebox.showinfo('ATENCION', 'Se grabó la fecha de ultimo riego')
