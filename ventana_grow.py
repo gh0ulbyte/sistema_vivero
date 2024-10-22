@@ -296,7 +296,7 @@ class Ventana_G(Frame):
                     CuentaRegresiva(ventana_cuenta_regresiva)
                     Llave(ventana_cuenta_regresiva)
                     print("Sistema de riego activado")
-                    time.sleep(60)  # Evitar múltiples activaciones en el mismo minuto
+                    time.sleep(60) 
             time.sleep(30)    
   
     
