@@ -1,9 +1,7 @@
 from abc import ABC, abstractmethod
-import os
 import time
 from datetime import datetime
-import tkinter 
-from tkinter import ttk, messagebox, Label, Button
+from tkinter import messagebox, Label, Button
 from modelo import guardar_fecha
 
 
@@ -35,7 +33,7 @@ class Llave(Riego):
         
         
 #----------------------------------------------        
-class CuentaRegresiva:
+class CuentaRegresiva():
     def __init__(self, master):
         self.master = master
         self.master.title("Regar ahora")
