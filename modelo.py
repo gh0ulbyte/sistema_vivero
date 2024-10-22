@@ -134,17 +134,3 @@ def guardar_fecha(fecha_actual):
             conexion.desconectar()
             
             
-def nueva_planta_riego(planta, fecha_ultimo):
-    try:
-        conexion=Conexion()
-        cursor=conexion.conectar()
-        sql="insert into riego(planta, fecha_ultimo) "
-        sql+=" value("+str(planta)+",'"+fecha_ultimo+"');"
-        cursor.execute(sql)
-        cursor.execute('commit')
-        return True
-    except Exception as e:
-        print(e)
-        return False
-    finally:
-        conexion.desconectar()
