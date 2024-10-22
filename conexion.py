@@ -8,7 +8,7 @@ class Conexion():
         self.conexion=mysql.connector.connect(
             host='127.0.0.1',
             user='root',
-            passwd='Jesus.033531',
+            passwd='cfp402',
             db='grow_system'
         )
         
