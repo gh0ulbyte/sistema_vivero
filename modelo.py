@@ -39,7 +39,7 @@ def buscar_planta(especie):
     try:
         conexion = Conexion()
         cursor = conexion.conectar()
-        sql = "SELECT id_planta, especie, cajon FROM planta WHERE especie LIKE '%" + especie + "%'"
+        sql = "SELECT id_planta, cajon, cantidad_plantines FROM planta WHERE especie LIKE '%" + especie + "%'"
         cursor.execute(sql)
         plantas = cursor.fetchall()
         return True, plantas
@@ -89,7 +89,7 @@ def vender_planta(cantidad, id_planta):
                 print(f'No hay suficiente Stock :{stock_actual}.')
                 
         else:
-            print('Articulo no encontrado...')
+            print('Planta no encontrada...')
     except Exception as e:
         print(e)
     finally:
@@ -102,7 +102,7 @@ def riego_auto():
     try:
         conexion=Conexion()
         cursor=conexion.conectar()        
-        sql="select riego_auto from riego order by especie limit 1  "   
+        sql="select riego_auto from riego group by especie limit 1  "   
         cursor.execute(sql)
         plantas=cursor.fetchone()
         return True, plantas
@@ -112,33 +112,7 @@ def riego_auto():
     finally:
         conexion.desconectar()
         
-def habilitar_auto():
-    try:
-        conexion=Conexion()
-        cursor=conexion.conectar()
-        sql="update riego set riego_auto:'habilitado'"
-        cursor.execute(sql)
-        cursor.execute('commit')
-        return True
-    except Exception as e:
-        print(e)
-        return False
-    finally:
-        conexion.desconectar()
-        
-def deshabilitar_auto():
-    try:
-        conexion=Conexion()
-        cursor=conexion.conectar()
-        sql="update riego set riego_auto:'deshabilitado'"
-        cursor.execute(sql)
-        cursor.execute('commit')
-        return True
-    except Exception as e:
-        print (e)
-        return False
-    finally:
-        conexion.desconectar()
+
         
 def guardar_fecha(fecha_actual):
         
