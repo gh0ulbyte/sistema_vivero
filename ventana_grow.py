@@ -30,7 +30,6 @@ class Ventana_G(Frame):
         self.cantidad=StringVar()
         self.cantidad_venta=StringVar()
         self.cajon=StringVar()
-        self.fecha_riego=StringVar()
         self.sistema_habilitado=True
         
         hilo_riego = threading.Thread(target=riego_auto)
@@ -89,7 +88,7 @@ class Ventana_G(Frame):
         self.ven_planta.config(bg='#89F08C')
         self.ven_planta.grab_set()
         self.ven_planta.resizable(0, 0)
-        self.ven_planta.geometry('600x600')
+        self.ven_planta.geometry('450x450')
         self.ven_planta.title("Listado de Plantas")
 
         self.grilla = ttk.Treeview(self.ven_planta, columns=('col1', 'col2', 'col3'))
@@ -148,8 +147,8 @@ class Ventana_G(Frame):
             
             else:
                 messagebox.showerror("Grabar Planta", "No se pudo guardar la planta o ya existe, compruebe stock")
-        except ValueError:
-            messagebox.showerror('Error', 'Ingrese una fecha valida con el formato DD-MM-YYYY')
+        except Exception as e:
+            print(e)
     
     
     #Buscar plantas
@@ -312,4 +311,6 @@ class Ventana_G(Frame):
         CuentaRegresiva(ventana_cuenta_regresiva)
         Llave(ventana_cuenta_regresiva)
         self.sistema_habilitado=False
-
+        
+        
+            
