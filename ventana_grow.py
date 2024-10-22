@@ -6,12 +6,12 @@ from tkinter import Toplevel, Label, Menu
 from tkinter import messagebox, Frame, Entry, Button, StringVar
 from PIL import Image, ImageTk
 from tkinter import ttk, END
-from modelo import nueva_planta, nueva_planta_riego
+from modelo import nueva_planta
 from modelo import buscar_planta
 from modelo import listar_planta, buscar_planta_simple
 from modelo import riego_auto
-from modelo import vender_planta, guardar_fecha
-from riego import Riego,Llave, CuentaRegresiva
+from modelo import vender_planta
+from riego import Llave, CuentaRegresiva
 import threading
 
 
@@ -130,14 +130,14 @@ class Ventana_G(Frame):
         self.ven_plantita=Toplevel(self.ppal)
         self.ven_plantita.geometry('400x400')
         self.ven_plantita.title('Nueva Planta')
-        label1=Label(self.ven_plantita, text='Especie: ').place(x=2,y=50)
-        label2=Label(self.ven_plantita, text='Cajon N°:').place(x=2, y=100)
-        label3=Label(self.ven_plantita, text='Cantidad plantines:').place(x=2, y=150)
-        text_especie=Entry(self.ven_plantita,textvariable=self.especie, font=16).place(x=110, y=50)
-        text_cajon=Entry(self.ven_plantita, textvariable=self.cajon, font=16).place(x=110,y=100)
-        text_cantidad=Entry(self.ven_plantita, textvariable=self.cantidad,font=16).place(x=110, y=150)
-        btn_grabar=Button(self.ven_plantita, text="Grabar", command=self.grabar_planta).place(x=10, y=200)
-        btn_cerrar=Button(self.ven_plantita, text="Cerrar", command=self.ven_plantita.destroy).place(x=60, y=200)
+        self.label1=Label(self.ven_plantita, text='Especie: ').place(x=2,y=50)
+        self.label2=Label(self.ven_plantita, text='Cajon N°:').place(x=2, y=100)
+        self.label3=Label(self.ven_plantita, text='Cantidad plantines:').place(x=2, y=150)
+        self.text_especie=Entry(self.ven_plantita,textvariable=self.especie, font=16).place(x=110, y=50)
+        self.text_cajon=Entry(self.ven_plantita, textvariable=self.cajon, font=16).place(x=110,y=100)
+        self.text_cantidad=Entry(self.ven_plantita, textvariable=self.cantidad,font=16).place(x=110, y=150)
+        self.btn_grabar=Button(self.ven_plantita, text="Grabar", command=self.grabar_planta).place(x=10, y=200)
+        self.btn_cerrar=Button(self.ven_plantita, text="Cerrar", command=self.ven_plantita.destroy).place(x=60, y=200)
         
     def grabar_planta(self):
         try:
@@ -159,11 +159,11 @@ class Ventana_G(Frame):
         self.ven_busco=Toplevel(self.ppal)
         self.ven_busco.geometry('400x300')
         self.ven_busco.title('Buscar ID planta')
-        label1=Label(self.ven_busco, text="Especie").place(x=2, y=10)
-        text_especie=Entry(self.ven_busco, textvariable=self.especie, font=16).place(x=50,y=10)
-        btn_busco=Button(self.ven_busco, text='Buscar ', command=self.buscar_planta_2).place(x=2, y=50)
-        label2=Label(self.ven_busco, text='ID PLANTA: ').place(x=5, y=80)
-        txt_id_planta=Entry(self.ven_busco, textvariable=self.id_planta, font=16).place(x=100,y=80)
+        self.label1=Label(self.ven_busco, text="Especie").place(x=2, y=10)
+        self.text_especie=Entry(self.ven_busco, textvariable=self.especie, font=16).place(x=50,y=10)
+        self.btn_busco=Button(self.ven_busco, text='Buscar ', command=self.buscar_planta_2).place(x=2, y=50)
+        self.label2=Label(self.ven_busco, text='ID PLANTA: ').place(x=5, y=80)
+        self.txt_id_planta=Entry(self.ven_busco, textvariable=self.id_planta, font=16).place(x=100,y=80)
         
         
         
@@ -192,37 +192,42 @@ class Ventana_G(Frame):
         self.ven_buster=Toplevel(self.ppal)
         self.ven_buster.geometry('400x400')
         self.ven_buster.title('Vender Planta')
-        label1=Label(self.ven_buster, text='ID Planta').place(x=2 , y=10)
-        text_id=Entry(self.ven_buster, textvariable=self.id_planta, font=16).place(x=60,y=10)
-        btn_buscar=Button(self.ven_buster, text='Buscar', command=self.venta_cosecha).place(x=2,y=50)
-        label2=Label(self.ven_buster, text='Especie: ').place(x=5, y=80)
-        label3=Label(self.ven_buster, text='Cantidad: ').place(x=5, y=120)
-        txt_especie=Entry(self.ven_buster, textvariable=self.especie, font=16).place(x=110,y=80)
-        txt_cantidad=Entry(self.ven_buster, textvariable=self.cantidad, font=16).place(x=110, y=120)
+        self.label1=Label(self.ven_buster, text='Especie:').place(x=2 , y=10)
+        self.text_id=Entry(self.ven_buster, textvariable=self.id_planta, font=16).place(x=60,y=10)
+        self.btn_buscar=Button(self.ven_buster, text='Buscar', command=self.busco_planta).place(x=2,y=50)
+        self.label2=Label(self.ven_buster, text='ID Planta: ').place(x=5, y=80)
+        self.label3=Label(self.ven_buster, text='Cantidad: ').place(x=5, y=120)
+        self.txt_especie=Entry(self.ven_buster, textvariable=self.especie, font=16).place(x=110,y=80)
+        self.txt_cantidad=Entry(self.ven_buster, textvariable=self.cantidad, font=16).place(x=110, y=120)
        
-        label4=Label(self.ven_buster, text='Cantidad a vender: ').place(x=5, y=200)
-        text_cant_ven=Entry(self.ven_buster, textvariable=self.cantidad_venta, font=16).place(x=110  ,y=200  )
+        self.label4=Label(self.ven_buster, text='Cantidad a vender: ').place(x=5, y=200)
+        self.text_cant_ven=Entry(self.ven_buster, textvariable=self.cantidad_venta, font=16).place(x=110  ,y=200  )
        
-        btn_grabar=Button(self.ven_buster, text='Vender', command=self.vendo).place(x=120, y=240)
+        self.btn_grabar=Button(self.ven_buster, text='Vender', command=self.vendo).place(x=120, y=240)
         
-    def venta_cosecha(self):
-        
-        respuesta, planta = buscar_planta_simple(self.id_planta.get()) 
+    
+    def busco_planta(self):
+        respuesta, planta = buscar_planta(self.especie.get())
         
         if respuesta:
             if planta:
-                self.especie.set(planta[0][1])  
+                self.id_planta.set(planta[0][0])  
+
                 self.cantidad.set(planta[0][2])
-               
             else:
-                self.especie.set(" ")
+                self.id_planta.set(" ")
+                
                 self.cantidad.set(" ")
                 messagebox.showerror("Buscar Planta", "Planta no encontrada")
         else:
             self.id_planta.set(" ")
+            
             self.cantidad.set(" ")
             messagebox.showerror("Buscar Planta", "Error en la búsqueda")
-            
+        
+        
+        
+                
     
     def vendo(self):
         if vender_planta(self.id_planta.get(), self.cantidad.get()):
@@ -262,14 +267,14 @@ class Ventana_G(Frame):
             self.riego_ven.geometry('400x400')
             self.riego_ven.title('Riego Automático')
             
-            label1 = Label(self.riego_ven, text='Riego Automático').place(x=2, y=10)
+            self.label1 = Label(self.riego_ven, text='Riego Automático').place(x=2, y=10)
             self.entrada_estado = Entry(self.riego_ven, width=30)
             self.entrada_estado.place(x=2, y=50)
             
-            btn_habilitar = Button(self.riego_ven, text='Habilitar Riego', command=self.habilitar_sistema).place(x=10, y=100)
-            btn_deshabilitar = Button(self.riego_ven, text='Deshabilitar Riego', command=self.deshabilitar_sistema).place(x=10, y=140)
-            btn_verificar = Button(self.riego_ven, text='Verificar Estado', command=self.verificar_estado).place(x=180, y=50)
-            btn_regar_ya=Button(self.riego_ven, text='Regar ahora', command=self.riego_manual).place(x=180, y=80)
+            self.btn_habilitar = Button(self.riego_ven, text='Habilitar Riego', command=self.habilitar_sistema).place(x=10, y=100)
+            self.btn_deshabilitar = Button(self.riego_ven, text='Deshabilitar Riego', command=self.deshabilitar_sistema).place(x=10, y=140)
+            self.btn_verificar = Button(self.riego_ven, text='Verificar Estado', command=self.verificar_estado).place(x=180, y=50)
+            self.btn_regar_ya=Button(self.riego_ven, text='Regar ahora', command=self.riego_manual).place(x=180, y=80)
             
             
     def verificar_estado(self):
@@ -296,7 +301,7 @@ class Ventana_G(Frame):
                     CuentaRegresiva(ventana_cuenta_regresiva)
                     Llave(ventana_cuenta_regresiva)
                     print("Sistema de riego activado")
-                    time.sleep(60) 
+                    time.sleep(60)  
             time.sleep(30)    
   
     
@@ -307,4 +312,4 @@ class Ventana_G(Frame):
         CuentaRegresiva(ventana_cuenta_regresiva)
         Llave(ventana_cuenta_regresiva)
         self.sistema_habilitado=False
-    
+
