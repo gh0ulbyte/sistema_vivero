@@ -10,13 +10,14 @@ from modelo import nueva_planta
 from modelo import buscar_planta
 from modelo import listar_planta, buscar_planta_simple
 from modelo import riego_auto
-from modelo import vender_planta
+from modelo import vender_planta, guardar_fecha
+from modelo import habilito, deshabilito
 from riego import Llave, CuentaRegresiva
 import threading
 
 
 
-class Ventana_G(Frame):
+class Ventana_Grow(Frame):
     def __init__(self, ppal):
         super().__init__()
         
@@ -172,33 +173,39 @@ class Ventana_G(Frame):
         
         if respuesta:
             if planta:
-                self.id_planta.set(planta[0][0])  
-                self.cajon.set(planta[0][1])
+                # Cambia aquí el índice a 1 para que tome el segundo valor como id_planta
+                self.id_planta.set(planta[0][1])  
+                self.cajon.set(planta[0][0])  # Si necesitas el cajón
                 self.cantidad.set(planta[0][2])
             else:
-                self.id_planta.set(" ")
-                self.cajon.set(" ")
-                self.cantidad.set(" ")
+                self.id_planta.set("")
+                self.cajon.set("")
+                self.cantidad.set("")
                 messagebox.showerror("Buscar Planta", "Planta no encontrada")
         else:
-            self.id_planta.set(" ")
-            self.cajon.set(" ")
-            self.cantidad.set(" ")
+            self.id_planta.set("")
+            self.cajon.set("")
+            self.cantidad.set("")
             messagebox.showerror("Buscar Planta", "Error en la búsqueda")
     
+    #VENTA
     
     def venta(self):
         self.ven_buster=Toplevel(self.ppal)
         self.ven_buster.geometry('400x400')
         self.ven_buster.title('Vender Planta')
         self.label1=Label(self.ven_buster, text='Especie:').place(x=2 , y=10)
-        self.text_id=Entry(self.ven_buster, textvariable=self.id_planta, font=16).place(x=60,y=10)
+        
         self.btn_buscar=Button(self.ven_buster, text='Buscar', command=self.busco_planta).place(x=2,y=50)
         self.label2=Label(self.ven_buster, text='ID Planta: ').place(x=5, y=80)
         self.label3=Label(self.ven_buster, text='Cantidad: ').place(x=5, y=120)
-        self.txt_especie=Entry(self.ven_buster, textvariable=self.especie, font=16).place(x=110,y=80)
+        
+        self.txt_especie=Entry(self.ven_buster, textvariable=self.especie, font=16).place(x=60,y=10)
+        
+        self.text_id=Entry(self.ven_buster, textvariable=self.id_planta, font=16).place(x=110,y=80)
+        
         self.txt_cantidad=Entry(self.ven_buster, textvariable=self.cantidad, font=16).place(x=110, y=120)
-       
+        
         self.label4=Label(self.ven_buster, text='Cantidad a vender: ').place(x=5, y=200)
         self.text_cant_ven=Entry(self.ven_buster, textvariable=self.cantidad_venta, font=16).place(x=110  ,y=200  )
        
@@ -210,30 +217,38 @@ class Ventana_G(Frame):
         
         if respuesta:
             if planta:
-                self.id_planta.set(planta[0][0])  
-
-                self.cantidad.set(planta[0][2])
+                # Establece el primer valor (id_planta) y el tercer valor (cantidad_plantines)
+                self.id_planta.set(planta[0][0])  # Cambia a índice 0 para obtener id_planta
+                self.cantidad.set(planta[0][2])    # Mantiene el índice 2 para la cantidad
             else:
-                self.id_planta.set(" ")
-                
-                self.cantidad.set(" ")
+                self.id_planta.set("")
+                self.cantidad.set("")
                 messagebox.showerror("Buscar Planta", "Planta no encontrada")
         else:
-            self.id_planta.set(" ")
-            
-            self.cantidad.set(" ")
+            self.id_planta.set("")
+            self.cantidad.set("")
             messagebox.showerror("Buscar Planta", "Error en la búsqueda")
-        
-        
+
+
+
+  
         
                 
     
     def vendo(self):
-        if vender_planta(self.id_planta.get(), self.cantidad.get()):
-            messagebox.showinfo("GRABAR", "Se grabo correctamente.")
-            self.ven_buster.destroy()
+        
+        id_planta = self.id_planta.get()
+        cantidad_a_vender = self.cantidad_venta.get()  # Asegúrate de que este valor sea válido
+
+        # Verifica que id_planta y cantidad_a_vender sean válidos antes de proceder
+        if id_planta and cantidad_a_vender.isdigit():
+            if vender_planta(int(id_planta), int(cantidad_a_vender)):
+                messagebox.showinfo("GRABAR", "Se registró la venta correctamente.")
+                self.ven_buster.destroy()
+            else:
+                messagebox.showerror("Grabar", "No se ha podido registrar la venta.")
         else:
-            messagebox.showerror("Grabar", "No se ha grabado la venta.")
+            messagebox.showerror("Error", "Por favor ingresa un ID de planta y cantidad válidos.")
     
         
         
@@ -284,10 +299,12 @@ class Ventana_G(Frame):
     def habilitar_sistema(self):
         self.sistema_habilitado = True
         messagebox.showinfo('Riego Automático', 'Sistema de riego habilitado a las 18:00')
+        habilito()
 
     def deshabilitar_sistema(self):
         self.sistema_habilitado = False
         messagebox.showwarning('Advertencia', 'Sistema de riego deshabilitado')
+        deshabilito()
         
         
     def riego_auto(self):
@@ -300,6 +317,8 @@ class Ventana_G(Frame):
                     CuentaRegresiva(ventana_cuenta_regresiva)
                     Llave(ventana_cuenta_regresiva)
                     print("Sistema de riego activado")
+                    
+                    guardar_fecha()
                     time.sleep(60)  
             time.sleep(30)    
   
@@ -307,10 +326,13 @@ class Ventana_G(Frame):
   
     
     def riego_manual(self):
-        ventana_cuenta_regresiva=Toplevel(self.ppal)
+        ventana_cuenta_regresiva = Toplevel(self.ppal)
         CuentaRegresiva(ventana_cuenta_regresiva)
         Llave(ventana_cuenta_regresiva)
-        self.sistema_habilitado=False
+        self.sistema_habilitado = False
+        fecha_actual = datetime.now().strftime("%d-%m-%Y")
+        guardar_fecha(fecha_actual)  
+        deshabilito()
         
         
             
