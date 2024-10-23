@@ -4,20 +4,30 @@ from datetime import datetime
 
 def nueva_planta(especie, cajon, cantidad):
     try:
-    
-        conexion=Conexion()
-        cursor=conexion.conectar()
-        sql="insert into planta(especie,cajon, cantidad_plantines)"
-        sql+=" value('"+especie+"',"+str(cajon)+","+str(cantidad)+");"
-        print(sql)
-        cursor.execute(sql)
+        conexion = Conexion()
+        cursor = conexion.conectar()
+
+        
+        sql = "INSERT INTO planta (especie, cajon, cantidad_plantines) VALUES (%s, %s, %s);"
+        cursor.execute(sql, (especie, cajon, cantidad))  
+
+        
+        planta = cursor.lastrowid
+
+       
+        sql_riego = "INSERT INTO riego (planta, fecha_ultimo) VALUES (%s, NULL);"
+        cursor.execute(sql_riego, (planta,))  
+
+        
         cursor.execute('commit')
+        print("Planta y registro de riego guardados correctamente.")
         return True
     except Exception as e:
-        print (e)
+        print(e)
         return False
     finally:
         conexion.desconectar()
+
         
         
 def buscar_planta_simple(id_planta):
@@ -48,6 +58,7 @@ def buscar_planta(especie):
         return False, []
     finally:
         conexion.desconectar()
+
         
 def listar_planta():
     try:
@@ -70,30 +81,33 @@ def listar_planta():
         
 def vender_planta(cantidad, id_planta):
     try:
-        conexion=Conexion()
-        cursor=conexion.conectar()
-        sql="select cantidad_plantines from planta where id_planta="+str(id_planta)
+        print(f"Intentando vender: {cantidad} de ID planta: {id_planta}")  
+        conexion = Conexion()
+        cursor = conexion.conectar()
+        sql = "SELECT cantidad_plantines FROM planta WHERE id_planta=" + str(id_planta)
         cursor.execute(sql)
-        resultado=cursor.fetchone()
-        
+        resultado = cursor.fetchone()
+
         if resultado:
-            stock_actual=resultado[0]
-            if stock_actual>cantidad:
-                nuevo_stock=stock_actual-cantidad
-                sql="update planta set cantidad_plantines="+str(nuevo_stock)+" where id_planta="+str(id_planta)
+            stock_actual = resultado[0]
+            if stock_actual >= cantidad: 
+                nuevo_stock = stock_actual - cantidad
+                sql = "UPDATE planta SET cantidad_plantines=" + str(nuevo_stock) + " WHERE id_planta=" + str(id_planta)
                 cursor.execute(sql)
                 cursor.execute('commit')
-                print(f'Se vendieron {cantidad} de articulos. Nuevo stock:{nuevo_stock}')
-                
+                print(f'Se vendieron {cantidad} artículos. Nuevo stock: {nuevo_stock}')
             else:
-                print(f'No hay suficiente Stock :{stock_actual}.')
-                
+                print(f'No hay suficiente stock: {stock_actual}.')
         else:
             print('Planta no encontrada...')
+        return True
     except Exception as e:
-        print(e)
+        print(f"Error al vender la planta {e}")
+        return False
     finally:
         conexion.desconectar()
+
+
         
         
 #RIEGO
@@ -102,7 +116,7 @@ def riego_auto():
     try:
         conexion=Conexion()
         cursor=conexion.conectar()        
-        sql="select riego_auto from riego group by especie limit 1  "   
+        sql="SELECT riego_auto FROM riego LIMIT 1"    
         cursor.execute(sql)
         plantas=cursor.fetchone()
         return True, plantas
@@ -115,22 +129,51 @@ def riego_auto():
 
         
 def guardar_fecha(fecha_actual):
+    try:
+        conexion = Conexion()
+        cursor = conexion.conectar()
+       
+        # Aquí se inserta la fecha en la tabla de riego
+        sql = "UPDATE  riego SET fecha_ultimo= %s WHERE planta IS NOT NULL;"
+        cursor.execute(sql, (fecha_actual,))  # Usa una tupla para pasar el parámetro
+        print(f"Fecha guardada:{fecha_actual}")
+        cursor.execute('commit')
+        print(f"Fecha guardada: {fecha_actual}")
+    except Exception as e:
+        print(e)
+    finally:
+        conexion.desconectar()
         
-        try:
-            fecha_actual = datetime.now().strftime("%d-%m-%Y")
-            conexion=Conexion()
-            cursor=conexion.conectar()
-            
+def deshabilito():
+    try:
+        conexion=Conexion()
+        cursor=conexion.conectar()
         
-            with cursor:
-                sql="INSERT INTO riego (fecha_ultimo) VALUES ('"+ (fecha_actual,)+"') ;"
-                print(f"Fecha guardada: {fecha_actual}")
-                cursor.execute(sql)
-                cursor.execute('commit')
-        except Exception as e:
-            print(e)
-            
-        finally:
-            conexion.desconectar()
+        sql="update riego set riego_auto= 'deshabilitado';"
+        
+        cursor.execute(sql)
+        cursor.execute('commit')
+    except Exception as e:
+        print(e)
+    finally:
+        conexion.desconectar()
+        
+        
+def habilito():
+    try:
+        conexion=Conexion()
+        cursor=conexion.conectar()
+        
+        sql="update riego set riego_auto= 'habilitado';"
+        
+        cursor.execute(sql)
+        cursor.execute('commit')
+        
+    except Exception as e:
+        print(e)
+    finally:
+        conexion.desconectar()
+        
+        
             
             
