@@ -1,10 +1,10 @@
 from tkinter import Tk
 
-from ventana_grow import Ventana_G
+from ventana import Ventana_Grow
 
 ppal=Tk()
 
-ventana_ppal=Ventana_G(ppal)
+ventana_ppal=Ventana_Grow(ppal)
 
 ventana_ppal.mainloop()
 
