@@ -48,13 +48,14 @@ class CuentaRegresiva():
 
 
     def iniciar_cuenta_regresiva(self):
-        fecha_actual = datetime.now().strftime("%d-%m-%Y")
-        guardar_fecha(fecha_actual)
-    
-        self.boton_iniciar.pack_forget()
+        try:
+            fecha_actual = datetime.now().strftime("%d-%m-%Y")
+            guardar_fecha(fecha_actual)  
+        except Exception as e:
+            print(f"Error al guardar la fecha: {e}")
 
+        self.boton_iniciar.pack_forget()
         self.actualizar_tiempo()
-        
 
 
 
@@ -68,6 +69,5 @@ class CuentaRegresiva():
             self.label_tiempo.config(text="¡Llaves Cerradas!")
             messagebox.showinfo('ATENCION', 'Se grabó la fecha de ultimo riego')
             messagebox.showwarning('ATENCION','Se deshabilito el riego automático')          
-
 
 
