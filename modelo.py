@@ -32,16 +32,23 @@ def nueva_planta(especie, cajon, cantidad):
         
 def buscar_planta_simple(id_planta):
     try:
-        conexion=Conexion()
-        cursor=conexion.conectar()
-        sql="select especie, cantidad_plantines from planta "
-        sql+=" where id_planta="+str(id_planta)
+        conexion = Conexion()
+        cursor = conexion.conectar()
+        sql = f"select especie, cantidad_plantines from planta where id_planta={id_planta};"
+        print(f"Consultando con SQL: {sql}")  
         cursor.execute(sql)
-        cursor.execute('commit')
-        return True, " "
+        planta = cursor.fetchone()  
+        
+        if planta:
+            print(f"Planta encontrada: {planta}")  
+            return True, planta
+        else:
+            print("Planta no encontrada")  
+            return False, None
+            
     except Exception as e:
-        print (e)
-        return False, " "
+        print(f"Error en la consulta: {e}")
+        return False, None
     finally:
         conexion.desconectar()
         
@@ -81,29 +88,74 @@ def listar_planta():
         
 def vender_planta(cantidad, id_planta):
     try:
-        print(f"Intentando vender: {cantidad} de ID planta: {id_planta}")  
         conexion = Conexion()
         cursor = conexion.conectar()
-        sql = "SELECT cantidad_plantines FROM planta WHERE id_planta=" + str(id_planta)
+        
+        
+        sql = f"select cantidad_plantines from planta where id_planta={id_planta}"
+        print(f"Consulta SQL: {sql}")
         cursor.execute(sql)
         resultado = cursor.fetchone()
-
+        
         if resultado:
             stock_actual = resultado[0]
-            if stock_actual >= cantidad: 
+            if stock_actual >= cantidad:  
                 nuevo_stock = stock_actual - cantidad
-                sql = "UPDATE planta SET cantidad_plantines=" + str(nuevo_stock) + " WHERE id_planta=" + str(id_planta)
+                
+                sql = f"update planta set cantidad_plantines={nuevo_stock} where id_planta={id_planta}"
+                print(f"Actualizando stock: {sql}")
                 cursor.execute(sql)
                 cursor.execute('commit')
-                print(f'Se vendieron {cantidad} artículos. Nuevo stock: {nuevo_stock}')
+                print(f"Se vendieron {cantidad} artículos. Nuevo stock: {nuevo_stock}")
+                return True  
             else:
-                print(f'No hay suficiente stock: {stock_actual}.')
+                print(f"No hay suficiente Stock: {stock_actual}.")
+                return False  
         else:
-            print('Planta no encontrada...')
-        return True
+            print("Articulo no encontrado...")
+            return False  
+        
     except Exception as e:
-        print(f"Error al vender la planta {e}")
-        return False
+        print(e)
+        return False  
+    
+    finally:
+        conexion.desconectar()
+        
+        
+def stock_planta(cantidad, id_planta):
+    try:
+        conexion = Conexion()
+        cursor = conexion.conectar()
+        
+        
+        sql = f"select cantidad_plantines from planta where id_planta={id_planta}"
+        print(f"Consulta SQL: {sql}")
+        cursor.execute(sql)
+        resultado = cursor.fetchone()
+        
+        if resultado:
+            stock_actual = resultado[0]
+            if stock_actual <= 10:  
+                nuevo_stock = stock_actual + cantidad
+                
+                sql = f"update planta set cantidad_plantines={nuevo_stock} where id_planta={id_planta}"
+                print(f"Actualizando stock: {sql}")
+                cursor.execute(sql)
+                cursor.execute('commit')
+                print(f"Se agregaron {cantidad} plantines. Nuevo stock: {nuevo_stock}")
+                return True  
+            else:
+                print(f"Hay suficiente Stock: {stock_actual}.")
+                return False  
+        else:
+            print("Articulo no encontrado...")
+            return False  
+        
+    except Exception as e:
+        print(e)
+        return False  
+    
     finally:
         conexion.desconectar()
 
@@ -133,9 +185,9 @@ def guardar_fecha(fecha_actual):
         conexion = Conexion()
         cursor = conexion.conectar()
        
-        # Aquí se inserta la fecha en la tabla de riego
+        
         sql = "UPDATE  riego SET fecha_ultimo= %s WHERE planta IS NOT NULL;"
-        cursor.execute(sql, (fecha_actual,))  # Usa una tupla para pasar el parámetro
+        cursor.execute(sql, (fecha_actual,))  
         print(f"Fecha guardada:{fecha_actual}")
         cursor.execute('commit')
         print(f"Fecha guardada: {fecha_actual}")
