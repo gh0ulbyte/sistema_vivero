@@ -12,6 +12,7 @@ from modelo import listar_planta, buscar_planta_simple
 from modelo import riego_auto
 from modelo import vender_planta, guardar_fecha
 from modelo import habilito, deshabilito
+from modelo import stock_planta
 from riego import Llave, CuentaRegresiva
 import threading
 
@@ -31,6 +32,8 @@ class Ventana_Grow(Frame):
         self.cantidad=StringVar()
         self.cantidad_venta=StringVar()
         self.cajon=StringVar()
+        self.cantidad_stock=StringVar()
+        
         self.sistema_habilitado=True
         
         hilo_riego = threading.Thread(target=riego_auto)
@@ -69,6 +72,7 @@ class Ventana_Grow(Frame):
         self.menu_ppal.add_command(label='Listar Planta', command=self.listar_plantas)
         self.menu_ppal.add_command(label='Buscar Planta', command=self.buscar_planta2)
         self.menu_ppal.add_command(label='Venta ', command=self.venta)
+        self.menu_ppal.add_command(label='Agregar Stock', command=self.stock_plantas)
         self.menu_bar.add_cascade(label='Planta', menu=self.menu_ppal)
         
       #Menu RIEGO
@@ -150,6 +154,71 @@ class Ventana_Grow(Frame):
                 messagebox.showerror("Grabar Planta", "No se pudo guardar la planta o ya existe, compruebe stock")
         except Exception as e:
             print(e)
+            
+    def stock_plantas(self):
+        self.ven_stock=Toplevel(self.ppal)
+        self.ven_stock.geometry('400x400')
+        self.ven_stock.title('Agregar Stock')
+        label1=Label(self.ven_stock, text='ID Planta').place(x=2 , y=10)
+        text_id=Entry(self.ven_stock, textvariable=self.id_planta, font=16).place(x=60,y=10)
+        btn_buscar=Button(self.ven_stock, text='Buscar', command=self.stock_actual).place(x=2,y=50)
+        label2=Label(self.ven_stock, text='Especie: ').place(x=5, y=80)
+        label3=Label(self.ven_stock, text='Cantidad: ').place(x=5, y=120)
+        txt_especie=Entry(self.ven_stock, textvariable=self.especie, font=16).place(x=110,y=80)
+        txt_cantidad=Entry(self.ven_stock, textvariable=self.cantidad, font=16).place(x=110, y=120)
+       
+        label4=Label(self.ven_stock, text='Cantidad a reponer: ').place(x=5, y=200)
+        text_cant_stock=Entry(self.ven_stock, textvariable=self.cantidad_stock, font=16).place(x=110  ,y=200  )
+       
+        btn_grabar=Button(self.ven_stock, text='Guardar', command=self.guardo).place(x=120, y=240)
+        
+    def stock_actual(self):
+        try:
+            
+            id_planta_val = int(self.id_planta.get())  
+            respuesta, planta = buscar_planta_simple(id_planta_val)
+            
+            if respuesta:
+                if planta:
+                    self.especie.set(planta[0])  
+                    self.cantidad.set(planta[1])  
+                else:
+                    self.especie.set(" ")
+                    self.cantidad.set(" ")
+                    messagebox.showerror("Buscar Planta", "Planta no encontrada")
+            else:
+                self.especie.set(" ")
+                self.cantidad.set(" ")
+                messagebox.showerror("Buscar Planta", "Error en la búsqueda")
+        except Exception as e:
+            print(e)
+    
+    def guardo(self):
+        try:
+            
+            cantidad_stock = int(self.cantidad_stock.get())  
+            id_planta = int(self.id_planta.get())  
+
+            
+            print(f"Intentando reponer {cantidad_stock} plantines de la planta con ID {id_planta}")
+
+            
+            stock_exitoso = stock_planta(cantidad_stock, id_planta)
+            
+            if stock_exitoso:
+                print("Stock registrado correctamente.")
+                messagebox.showinfo("GRABAR", "Se grabó correctamente.")
+                self.ven_stock.destroy()
+            else:
+                print("No se pudo grabar el stock.")
+                messagebox.showerror("Grabar", "No se ha grabado el stock.")
+                
+        except ValueError:
+            print("Valor no válido para la cantidad de venta.")
+            messagebox.showerror("Error", "Por favor, ingrese valores numéricos válidos para la cantidad.")
+        
+    
+    
     
     
     #Buscar plantas
@@ -173,9 +242,9 @@ class Ventana_Grow(Frame):
         
         if respuesta:
             if planta:
-                # Cambia aquí el índice a 1 para que tome el segundo valor como id_planta
+                
                 self.id_planta.set(planta[0][1])  
-                self.cajon.set(planta[0][0])  # Si necesitas el cajón
+                self.cajon.set(planta[0][0])  
                 self.cantidad.set(planta[0][2])
             else:
                 self.id_planta.set("")
@@ -193,64 +262,63 @@ class Ventana_Grow(Frame):
     def venta(self):
         self.ven_buster=Toplevel(self.ppal)
         self.ven_buster.geometry('400x400')
-        self.ven_buster.title('Vender Planta')
-        self.label1=Label(self.ven_buster, text='Especie:').place(x=2 , y=10)
-        
-        self.btn_buscar=Button(self.ven_buster, text='Buscar', command=self.busco_planta).place(x=2,y=50)
-        self.label2=Label(self.ven_buster, text='ID Planta: ').place(x=5, y=80)
-        self.label3=Label(self.ven_buster, text='Cantidad: ').place(x=5, y=120)
-        
-        self.txt_especie=Entry(self.ven_buster, textvariable=self.especie, font=16).place(x=60,y=10)
-        
-        self.text_id=Entry(self.ven_buster, textvariable=self.id_planta, font=16).place(x=110,y=80)
-        
-        self.txt_cantidad=Entry(self.ven_buster, textvariable=self.cantidad, font=16).place(x=110, y=120)
-        
-        self.label4=Label(self.ven_buster, text='Cantidad a vender: ').place(x=5, y=200)
-        self.text_cant_ven=Entry(self.ven_buster, textvariable=self.cantidad_venta, font=16).place(x=110  ,y=200  )
+        label1=Label(self.ven_buster, text='ID Planta').place(x=2 , y=10)
+        text_id=Entry(self.ven_buster, textvariable=self.id_planta, font=16).place(x=60,y=10)
+        btn_buscar=Button(self.ven_buster, text='Buscar', command=self.venta_cosecha).place(x=2,y=50)
+        label2=Label(self.ven_buster, text='Especie: ').place(x=5, y=80)
+        label3=Label(self.ven_buster, text='Cantidad: ').place(x=5, y=120)
+        txt_especie=Entry(self.ven_buster, textvariable=self.especie, font=16).place(x=110,y=80)
+        txt_cantidad=Entry(self.ven_buster, textvariable=self.cantidad, font=16).place(x=110, y=120)
        
-        self.btn_grabar=Button(self.ven_buster, text='Vender', command=self.vendo).place(x=120, y=240)
+        label4=Label(self.ven_buster, text='Cantidad a vender: ').place(x=5, y=200)
+        text_cant_ven=Entry(self.ven_buster, textvariable=self.cantidad_venta, font=16).place(x=110  ,y=200  )
+       
+        btn_grabar=Button(self.ven_buster, text='Vender', command=self.vendo).place(x=120, y=240)
         
-    
-    def busco_planta(self):
-        respuesta, planta = buscar_planta(self.especie.get())
-        
-        if respuesta:
-            if planta:
-                # Establece el primer valor (id_planta) y el tercer valor (cantidad_plantines)
-                self.id_planta.set(planta[0][0])  # Cambia a índice 0 para obtener id_planta
-                self.cantidad.set(planta[0][2])    # Mantiene el índice 2 para la cantidad
+    def venta_cosecha(self):
+        try:
+            
+            id_planta_val = int(self.id_planta.get())  
+            respuesta, planta = buscar_planta_simple(id_planta_val)
+            
+            if respuesta:
+                if planta:
+                    self.especie.set(planta[0])  
+                    self.cantidad.set(planta[1])  
+                else:
+                    self.especie.set(" ")
+                    self.cantidad.set(" ")
+                    messagebox.showerror("Buscar Planta", "Planta no encontrada")
             else:
-                self.id_planta.set("")
-                self.cantidad.set("")
-                messagebox.showerror("Buscar Planta", "Planta no encontrada")
-        else:
-            self.id_planta.set("")
-            self.cantidad.set("")
-            messagebox.showerror("Buscar Planta", "Error en la búsqueda")
-
-
-
-  
-        
-                
+                self.especie.set(" ")
+                self.cantidad.set(" ")
+                messagebox.showerror("Buscar Planta", "Error en la búsqueda")
+        except Exception as e:
+            print(e)
     
     def vendo(self):
-        
-        id_planta = self.id_planta.get()
-        cantidad_a_vender = self.cantidad_venta.get()  # Asegúrate de que este valor sea válido
+        try:
+            
+            cantidad_venta = int(self.cantidad_venta.get())  
+            id_planta = int(self.id_planta.get())  
 
-        # Verifica que id_planta y cantidad_a_vender sean válidos antes de proceder
-        if id_planta and cantidad_a_vender.isdigit():
-            if vender_planta(int(id_planta), int(cantidad_a_vender)):
-                messagebox.showinfo("GRABAR", "Se registró la venta correctamente.")
+            
+            print(f"Intentando vender {cantidad_venta} artículos de la planta con ID {id_planta}")
+
+            
+            venta_exitosa = vender_planta(cantidad_venta, id_planta)
+            
+            if venta_exitosa:
+                print("Venta registrada correctamente.")
+                messagebox.showinfo("GRABAR", "Se grabó correctamente.")
                 self.ven_buster.destroy()
             else:
-                messagebox.showerror("Grabar", "No se ha podido registrar la venta.")
-        else:
-            messagebox.showerror("Error", "Por favor ingresa un ID de planta y cantidad válidos.")
-    
-        
+                print("No se pudo grabar la venta.")
+                messagebox.showerror("Grabar", "No se ha grabado la venta.")
+                
+        except ValueError:
+            print("Valor no válido para la cantidad de venta.")
+            messagebox.showerror("Error", "Por favor, ingrese valores numéricos válidos para la cantidad.")
         
     def buscar_planta_simple1(self):
         respuesta, planta = buscar_planta_simple(self.id_planta.get())
@@ -271,6 +339,7 @@ class Ventana_Grow(Frame):
             self.cantidad.set(" ")
             messagebox.showerror("Buscar Planta", "Error en la búsqueda")
             return False, " "
+    
     
     
     
